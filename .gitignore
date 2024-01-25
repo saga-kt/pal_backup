@@ -1,0 +1,6 @@
+.vscode
+lib/__pycache__
+log
+backup
+config.ini
+client_secrets.json
