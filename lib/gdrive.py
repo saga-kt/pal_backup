@@ -8,20 +8,7 @@ class GDrive:
     バックアップをアップロードするGドライブ
     """
     def __init__(self):
-        cred_file = "credentials.txt"
-        gauth = GoogleAuth()
-        gauth.LoadCredentialsFile(cred_file)
-        if gauth.credentials is None:
-            gauth.LocalWebserverAuth()
-        elif gauth.access_token_expired:
-            try:
-                gauth.Refresh()
-            except:
-                gauth.LocalWebserverAuth()
-        else:
-            gauth.Authorize()
-        gauth.SaveCredentialsFile(cred_file)
-        self.drive = GoogleDrive(gauth)
+        self.refresh_token()
 
         # バックアップフォルダ作成
         folder_name = "pal_backup"
@@ -48,4 +35,19 @@ class GDrive:
         file1.SetContentFile(backup_file)
         file1.Upload()
 
+    def refresh_token(self):
+        cred_file = "credentials.txt"
+        gauth = GoogleAuth()
+        gauth.LoadCredentialsFile(cred_file)
+        if gauth.credentials is None:
+            gauth.LocalWebserverAuth()
+        elif gauth.access_token_expired:
+            try:
+                gauth.Refresh()
+            except:
+                gauth.LocalWebserverAuth()
+        else:
+            gauth.Authorize()
+        gauth.SaveCredentialsFile(cred_file)
+        self.drive = GoogleDrive(gauth)
 

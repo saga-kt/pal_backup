@@ -70,22 +70,28 @@ if __name__ == "__main__":
     # バックアップ実行
     sleep_time_sec = 60
     last_backup_dt = None
+    last_backup_file = None
     while True:
         try:
             with Server(host, port, password, data_dir) as server:
                 while True:
+                    if gdrive_flg:
+                        gdrive.refresh_token()
                     player_cnt = server.count_players()
                     backup_flg = last_backup_dt is None or datetime.datetime.now() >= last_backup_dt + datetime.timedelta(hours=1)
                     if player_cnt <= 0 and backup_flg:
                         logging.debug("バックアップ生成中。")
                         try:
                             # ダンプ生成
-                            bkp_file = server.backup_data()
+                            last_backup_file = server.backup_data()
                             # Gドラに退避
                             if gdrive_flg:
-                                gdrive.upload_backup_file(os.path.join(server.backup_dir, bkp_file))
+                                try:
+                                    gdrive.upload_backup_file(os.path.join(server.backup_dir, last_backup_file))
+                                except Exception as e:
+                                    logging.warn(f"Gドライブにアップロードできません。{e}")
                             last_backup_dt = datetime.datetime.now()
-                            logging.info(f"バックアップ完了。{bkp_file}")
+                            logging.info(f"バックアップ完了。{last_backup_file}")
                         except Exception as e:
                             logging.error(f"バックアップ中にエラーが発生しました。 {e}")
                     elif backup_flg:
