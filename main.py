@@ -73,8 +73,9 @@ if __name__ == "__main__":
         gdrive = GDrive()
     # Discordの通知
     discord_webhook_url = config["DEFAULT"].get("discord_webhook", fallback="")
+    discord_role_id = config["DEFAULT"].get("discord_role_id", fallback="")
     if discord_webhook_url:
-        discord = DiscordManager(discord_webhook_url)
+        discord = DiscordManager(discord_webhook_url, notification_role_id=discord_role_id)
     else:
         discord = None
 
@@ -99,7 +100,7 @@ if __name__ == "__main__":
                         port_process_name = psutil.Process(pid).name()
                         break
                 try:
-                    discord.send_message("パルサーバが起動できません。プロセス:{port_process_name} 使用ポート:{pal_port} ")
+                    discord.send_message(f"パルサーバが起動できません。プロセス:{port_process_name} 使用ポート:{pal_port} ")
                 except:
                     pass
             time.sleep(60 * 60)
