@@ -15,6 +15,7 @@ class Server(Client):
         self.data_dir = data_dir
         self.backup_dir = backup_dir
         self.backup_dt_format = backup_dt_format
+        self.backup_file_prefix = "pal_backup_"
 
         # サーバーデータの確認
         if not os.path.exists(self.data_dir):
@@ -56,6 +57,17 @@ class Server(Client):
             return backup_filename
         else:
             raise(f"データフォルダが存在しません。{self.data_dir}")
+
+    def clean_backup_data(self, keep_days=7):
+        # 古いバックアップを削除
+        if os.path.exists(self.backup_dir):
+            clean_dt = (datetime.datetime.now() - datetime.timedelta(days=keep_days)).strftime("%Y%m%d")
+            clean_file_name = f"{self.backup_file_prefix}{clean_dt}"
+            prefix_len = len(clean_file_name)
+            for file in os.listdir(self.backup_dir):
+                cmp_file_name = file[:prefix_len]
+                if len(cmp_file_name) == prefix_len and cmp_file_name <= clean_file_name:
+                    os.remove(os.path.join(self.backup_dir, file))
 
     def shutdown(self, after_sec=180):
         return self.run("shutdown", str(after_sec), f"[お知らせ] {after_sec/60:.0f}分後にサーバーを停止します。")

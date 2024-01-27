@@ -71,14 +71,15 @@ if __name__ == "__main__":
     sleep_time_sec = 60
     last_backup_dt = None
     last_backup_file = None
+    last_cleanup_dt = None
+    keep_days = 7  # 一週間ファイルを保持
     while True:
         try:
             with Server(host, port, password, data_dir) as server:
                 while True:
-                    if gdrive_flg:
-                        gdrive.refresh_token()
                     player_cnt = server.count_players()
                     backup_flg = last_backup_dt is None or datetime.datetime.now() >= last_backup_dt + datetime.timedelta(hours=1)
+                    cleanup_flg = last_cleanup_dt is None or datetime.datetime.now() >= last_backup_dt + datetime.timedelta(days=1)
                     if player_cnt <= 0 and backup_flg:
                         logging.debug("バックアップ生成中。")
                         try:
@@ -92,6 +93,18 @@ if __name__ == "__main__":
                                     logging.warn(f"Gドライブにアップロードできません。{e}")
                             last_backup_dt = datetime.datetime.now()
                             logging.info(f"バックアップ完了。{last_backup_file}")
+
+                            if cleanup_flg:
+                                # ローカルバックアップの削除
+                                server.clean_backup_data(keep_days=keep_days)
+                                # Gドライブのバックアップ削除
+                                if gdrive_flg:
+                                    try:
+                                        del_count = gdrive.clean_backup_data(keep_days=keep_days)
+                                        logging.debug(f"Gドライブの{del_count}件のバックアップが削除されました。")
+                                    except:
+                                        logging.warn(f"Gドライブのファイル削除が失敗しました。{e}")
+                                last_cleanup_dt = datetime.datetime.now()
                         except Exception as e:
                             logging.error(f"バックアップ中にエラーが発生しました。 {e}")
                     elif backup_flg:

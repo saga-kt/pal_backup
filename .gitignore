@@ -1,7 +1,8 @@
 .vscode
 lib/__pycache__
-log
-backup
+log/
+backup/
 config.ini
 client_secrets.json
-credentials.txt
+service_secrets.json
+credentials.json
