@@ -58,7 +58,7 @@ class GDrive:
 
 
     def login_with_service_account(self):
-        gauth = GoogleAuth(settings_file="settings.yaml")
+        gauth = GoogleAuth(settings_file="gdrive_settings.yaml")
         gauth.ServiceAuth()
         self.drive = GoogleDrive(gauth)
 
